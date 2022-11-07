@@ -1,0 +1,19 @@
+{
+  "name": "ts-drag-and-drop",
+  "version": "1.0.0",
+  "description": "Practice for using TS",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "lite-server"
+  },
+  "keywords": [
+    "typescript",
+    "drag-and-drop"
+  ],
+  "author": "Nayeon Yeony Kim",
+  "license": "MIT",
+  "devDependencies": {
+    "lite-server": "^2.5.4"
+  }
+}
