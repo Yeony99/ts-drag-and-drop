@@ -4,11 +4,40 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Drag & Drop with Typescript</title>
+    <title>ProjectManager</title>
     <link rel="stylesheet" href="app.css" />
-    <!-- <script src="dist/app.js" defer></script> -->
+    <script src="dist/app.js" defer></script>
   </head>
   <body>
+    <template id="todo-input">
+      <form class="form">
+        <div class="form-control">
+          <label for="title">TODO</label>
+          <input type="text" id="title" />
+        </div>
+        <div class="form-control">
+          <label for="description">TODO Details</label>
+          <textarea id="description" rows="3"></textarea>
+        </div>
+        <div class="form-control">
+          <label for="date">Date</label>
+          <input type="datetime-local" id="date" />
+        </div>
+        <br/>
+        <button type="submit">ADD TODO</button>
+      </form>
+    </template>
+    <template id="single-project">
+      <li></li>
+    </template>
+    <template id="todo-list">
+      <section class="todos">
+        <header>
+          <h2></h2>
+        </header>
+        <ul></ul>
+      </section>
+    </template>
     <div id="app"></div>
   </body>
 </html>
