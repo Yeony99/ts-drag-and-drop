@@ -1,0 +1,139 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 1rem;
+}
+
+label,
+input,
+textarea {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+label {
+  font-weight: bold;
+}
+
+input,
+textarea {
+  font: inherit;
+  padding: 0.2rem 0.4rem;
+  width: 100%;
+  max-width: 30rem;
+  border: 1px solid #ccc;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  background: #fff5f9;
+}
+
+button {
+  font: inherit;
+  background: #ff0062;
+  border: 1px solid #ff0062;
+  cursor: pointer;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+button:focus {
+  outline: none;
+}
+
+button:hover,
+button:active {
+  background: #a80041;
+  border-color: #a80041;
+}
+
+form.form {
+  padding: 1rem;
+  border: 1px solid #787878;
+  border-radius: 0.25rem;
+}
+
+.form-control > input, textarea, select {
+  border-radius: 0.25rem;
+}
+
+.todos {
+  margin: 1rem;
+  border: 1px solid #ff0062;
+}
+
+.todos header {
+  background: #ff0062;
+  height: 3.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#finished-todos {
+  border-color: #0044ff;
+}
+
+#finished-todos header {
+  background: #0044ff;
+}
+
+.todos h2 {
+  margin: 0;
+  color: white;
+}
+
+.todos ul {
+  list-style: none;
+  margin: 0;
+  padding: 1rem;
+}
+
+.todos li {
+  box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.26);
+  padding: 1rem;
+  margin: 1rem;
+}
+
+.todos li h2 {
+  color: #ff0062;
+  margin: 0.5rem 0;
+}
+
+#finished-todos li h2 {
+  color: #0044ff;
+}
+
+.todos li h3 {
+  color: #575757;
+  font-size: 1rem;
+}
+
+.project li p {
+  margin: 0;
+}
+
+.droppable {
+  background: #ffe3ee;
+}
+
+#finished-todos .droppable {
+  background: #d6e1ff;
+}
+
+#user-input {
+  margin: 1rem;
+  padding: 1rem;
+  border: 1px solid #ff0062;
+  background: #f7f7f7;
+}
