@@ -1,3 +1,22 @@
+// autobind decorator 
+function autobind(
+    _target: any, 
+    _methodName: string, 
+    descriptor: PropertyDescriptor
+) {
+    const originalMethod = descriptor.value;
+    const adjDescriptor: PropertyDescriptor = {
+        configurable: true,
+        // getter 설정
+        get() {
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
+        }
+    };
+    return adjDescriptor;
+}
+
+
 class TodoInput {
     templateElement: HTMLTemplateElement;
     refElement: HTMLDivElement;
@@ -21,13 +40,14 @@ class TodoInput {
         this.attach();
     }
 
+    @autobind
     private submitHandler(event: Event) {
         event.preventDefault();
         console.log(this.titleInputElement.value);
     }
 
     private configure() {
-        this.element.addEventListener('submit', this.submitHandler.bind(this))
+        this.element.addEventListener('submit', this.submitHandler)
     }
 
     private attach() {
