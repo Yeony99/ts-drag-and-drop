@@ -40,10 +40,36 @@ class TodoInput {
         this.attach();
     }
 
+    private getUserInput(): [string, string, Date] | void {
+        const writtenTitle = this.titleInputElement.value;
+        const writtenDescription = this.descriptionInputElement.value;
+        const writtenDate = new Date(this.DateInputElement.value);
+
+        if(writtenTitle.trim().length === 0 || writtenDescription.trim().length === 0 || isNaN((writtenDate.getTime()))) {
+            alert('입력값에 오류가 있습니다. 다시 입력해주세요..')
+            return;
+        } else {
+            return [writtenTitle, writtenDescription, writtenDate];
+        }
+    }
+
+    private clearInputs(): void {
+        this.titleInputElement.value = '';
+        this.descriptionInputElement.value = '';
+        this.DateInputElement.value = '';
+    }
+
     @autobind
     private submitHandler(event: Event) {
         event.preventDefault();
-        console.log(this.titleInputElement.value);
+        const userInput = this.getUserInput();
+
+        if(Array.isArray(userInput)) {
+            const [title, desc, date] = userInput;
+
+            console.log(title, desc, date)
+            this.clearInputs();
+        }
     }
 
     private configure() {
