@@ -1,3 +1,41 @@
+// Validation
+interface Validatable {
+    value: string | Date;
+    required?: boolean;
+    minLength?: number;
+    maxLength?: number;
+    minDate?: string;
+    maxDate?: string;
+}
+
+function validate(validatableInput: Validatable) {
+    let isValid = true;
+    if(validatableInput.required) {
+        isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+        if(validatableInput.value instanceof Date) {
+            isValid = isValid && isNaN(new Date(validatableInput.value).getTime()) !== true
+        }
+    }
+    
+    if(validatableInput.minLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length > validatableInput.minLength;
+    }
+
+    if(validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
+        isValid = isValid && validatableInput.value.length < validatableInput.maxLength;
+    }
+
+    if(validatableInput.minDate != null && !isNaN(new Date(validatableInput.minDate).getTime())) {
+        isValid = isValid && new Date(validatableInput.value) > new Date(validatableInput.minDate);
+    }
+
+    if(validatableInput.maxDate != null && !isNaN(new Date(validatableInput.maxDate).getTime())) {
+        isValid = isValid && new Date(validatableInput.value) > new Date(validatableInput.maxDate);
+    }
+
+    return isValid;
+}
+
 // autobind decorator 
 function autobind(
     _target: any, 
@@ -45,7 +83,25 @@ class TodoInput {
         const writtenDescription = this.descriptionInputElement.value;
         const writtenDate = new Date(this.DateInputElement.value);
 
-        if(writtenTitle.trim().length === 0 || writtenDescription.trim().length === 0 || isNaN((writtenDate.getTime()))) {
+        const titleValidatable: Validatable = {
+            value: writtenTitle,
+            required: true,
+            maxLength: 20
+        };
+
+        const descValidatable: Validatable = {
+            value: writtenDescription,
+            required: true,
+            maxLength: 20
+        };
+
+        const dateValidatable: Validatable = {
+            value: writtenDate,
+            required: true,
+            minDate: new Date().toDateString()
+        };
+
+        if(!validate(titleValidatable) || !validate(descValidatable) || !validate(dateValidatable)) {
             alert('입력값에 오류가 있습니다. 다시 입력해주세요..')
             return;
         } else {
