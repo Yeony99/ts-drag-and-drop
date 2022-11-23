@@ -10,26 +10,26 @@ interface Validatable {
 
 function validate(validatableInput: Validatable) {
     let isValid = true;
-    if(validatableInput.required) {
+    if (validatableInput.required) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
-        if(validatableInput.value instanceof Date) {
+        if (validatableInput.value instanceof Date) {
             isValid = isValid && isNaN(new Date(validatableInput.value).getTime()) !== true
         }
     }
-    
-    if(validatableInput.minLength != null && typeof validatableInput.value === 'string') {
+
+    if (validatableInput.minLength != null && typeof validatableInput.value === 'string') {
         isValid = isValid && validatableInput.value.length > validatableInput.minLength;
     }
 
-    if(validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
+    if (validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
         isValid = isValid && validatableInput.value.length < validatableInput.maxLength;
     }
 
-    if(validatableInput.minDate != null && !isNaN(new Date(validatableInput.minDate).getTime())) {
+    if (validatableInput.minDate != null && !isNaN(new Date(validatableInput.minDate).getTime())) {
         isValid = isValid && new Date(validatableInput.value) > new Date(validatableInput.minDate);
     }
 
-    if(validatableInput.maxDate != null && !isNaN(new Date(validatableInput.maxDate).getTime())) {
+    if (validatableInput.maxDate != null && !isNaN(new Date(validatableInput.maxDate).getTime())) {
         isValid = isValid && new Date(validatableInput.value) > new Date(validatableInput.maxDate);
     }
 
@@ -38,8 +38,8 @@ function validate(validatableInput: Validatable) {
 
 // autobind decorator 
 function autobind(
-    _target: any, 
-    _methodName: string, 
+    _target: any,
+    _methodName: string,
     descriptor: PropertyDescriptor
 ) {
     const originalMethod = descriptor.value;
@@ -52,6 +52,34 @@ function autobind(
         }
     };
     return adjDescriptor;
+}
+
+
+class TodoList {
+    templateElement: HTMLTemplateElement;
+    refElement: HTMLDivElement;
+    element: HTMLElement;
+
+    constructor(private type: 'active' | 'finished') {
+        this.templateElement = document.getElementById('todo-list')! as HTMLTemplateElement;
+        this.refElement = document.getElementById('app')! as HTMLDivElement;
+
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild as HTMLElement;
+        this.element.id = `${this.type}-todos`
+        this.attach();
+        this.renderContent();
+    }
+
+    private renderContent() {
+        const listId = `${this.type}-todo-list`;
+        this.element.querySelector('ul')!.id = listId;
+        this.element.querySelector('h2')!.textContent = this.type.toUpperCase() + ' TODO'
+    }
+
+    private attach() {
+        this.refElement.insertAdjacentElement('beforeend', this.element);
+    }
 }
 
 
@@ -69,6 +97,7 @@ class TodoInput {
 
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild as HTMLElement;
+        this.element.id = 'user-input'
 
         this.titleInputElement = this.element.querySelector('#title') as HTMLInputElement;
         this.descriptionInputElement = this.element.querySelector('#description') as HTMLInputElement;
@@ -86,6 +115,7 @@ class TodoInput {
         const titleValidatable: Validatable = {
             value: writtenTitle,
             required: true,
+            minLength: 2,
             maxLength: 20
         };
 
@@ -101,7 +131,9 @@ class TodoInput {
             minDate: new Date().toDateString()
         };
 
-        if(!validate(titleValidatable) || !validate(descValidatable) || !validate(dateValidatable)) {
+        if (!validate(titleValidatable) ||
+            !validate(descValidatable) ||
+            !validate(dateValidatable)) {
             alert('입력값에 오류가 있습니다. 다시 입력해주세요..')
             return;
         } else {
@@ -120,7 +152,7 @@ class TodoInput {
         event.preventDefault();
         const userInput = this.getUserInput();
 
-        if(Array.isArray(userInput)) {
+        if (Array.isArray(userInput)) {
             const [title, desc, date] = userInput;
 
             console.log(title, desc, date)
@@ -138,3 +170,5 @@ class TodoInput {
 }
 
 const tdInput = new TodoInput();
+const activeTdList = new TodoList('active');
+const finishedTdList = new TodoList('finished');
