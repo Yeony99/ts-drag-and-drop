@@ -148,6 +148,31 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 }
 
 
+// TodoItem class
+
+class TodoItem extends Component<HTMLUListElement, HTMLLIElement> {
+
+    private todo: Todo;
+
+    constructor(refId: string, todo: Todo) {
+        super('single-todo', refId, true, todo.id);
+        this.todo = todo;
+
+        this.configure();
+        this.renderContent();
+    }
+
+    configure(): void {
+        
+    }
+
+    renderContent(): void {
+        this.element.querySelector('h2')!.textContent = this.todo.title;
+        this.element.querySelector('h3')!.textContent = this.todo.date.toString();
+        this.element.querySelector('p')!.textContent = this.todo.description;
+    }
+}
+
 class TodoList extends Component<HTMLDivElement, HTMLElement> {
     assignedTodos: Todo[];
 
@@ -165,9 +190,7 @@ class TodoList extends Component<HTMLDivElement, HTMLElement> {
         const listEl = document.getElementById(`${this.type}-todo-list`)! as HTMLUListElement;
         listEl.innerHTML = '';
         for (const todoItem of this.assignedTodos) {
-            const listItem = document.createElement('li');
-            listItem.textContent = todoItem.title;
-            listEl.appendChild(listItem)
+            new TodoItem(this.element.querySelector('ul')!.id, todoItem);
         }
     }
 
