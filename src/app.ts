@@ -168,7 +168,7 @@ class TodoItem extends Component<HTMLUListElement, HTMLLIElement> {
 
     renderContent(): void {
         this.element.querySelector('h2')!.textContent = this.todo.title;
-        this.element.querySelector('h3')!.textContent = this.todo.date.toString();
+        this.element.querySelector('h3')!.textContent = new Date(this.todo.date).toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'});
         this.element.querySelector('p')!.textContent = this.todo.description;
     }
 }
