@@ -1,3 +1,45 @@
+// 상태 관리 State Management
+
+class TodoState {
+    private listeners: any[] = [];
+    private todos: any[] = [];
+    private static instance: TodoState;
+    private constructor() {
+
+    }
+
+    static getInstance() {
+        if(this.instance) {
+            return this.instance;
+        }
+        this.instance = new TodoState();
+        return this.instance;
+    }
+
+    addListener(listenerFn: Function) {
+        this.listeners.push(listenerFn);
+    }
+
+    addTodo(title: string, description: string, date: Date) {
+        const newTodo = {
+            id: Math.random().toString(),
+            title: title,
+            description: description,
+            date: date
+        };
+
+        this.todos.push(newTodo);
+        for(const listenerFn of this.listeners) {
+            listenerFn(this.todos.slice()); // 새로운 배열 전달
+        }
+    }
+}
+
+// 싱글톤 패턴으로 변경
+// const todoState = new TodoState();
+const todoState = TodoState.getInstance();
+
+
 // Validation
 interface Validatable {
     value: string | Date;
@@ -59,17 +101,35 @@ class TodoList {
     templateElement: HTMLTemplateElement;
     refElement: HTMLDivElement;
     element: HTMLElement;
+    assignedTodos: any[];
 
     constructor(private type: 'active' | 'finished') {
         this.templateElement = document.getElementById('todo-list')! as HTMLTemplateElement;
         this.refElement = document.getElementById('app')! as HTMLDivElement;
+        this.assignedTodos = [];
 
         const importedNode = document.importNode(this.templateElement.content, true);
         this.element = importedNode.firstElementChild as HTMLElement;
         this.element.id = `${this.type}-todos`
+
+        todoState.addListener((todos: any[]) => {
+            this.assignedTodos = todos;
+            this.renderTodos();
+        });
+
         this.attach();
         this.renderContent();
     }
+
+    private renderTodos() {
+        const listEl = document.getElementById(`${this.type}-todo-list`)! as HTMLUListElement;
+        for(const todoItem of this.assignedTodos) {
+            const listItem = document.createElement('li');
+            listItem.textContent = todoItem.title;
+            listEl?.appendChild(listItem)
+        }
+    }
+
 
     private renderContent() {
         const listId = `${this.type}-todo-list`;
@@ -156,6 +216,7 @@ class TodoInput {
             const [title, desc, date] = userInput;
 
             console.log(title, desc, date)
+            todoState.addTodo(title, desc, date);
             this.clearInputs();
         }
     }
