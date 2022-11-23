@@ -197,7 +197,7 @@ class TodoItem extends Component<HTMLUListElement, HTMLLIElement> implements Dra
     }
 }
 
-class TodoList extends Component<HTMLDivElement, HTMLElement> {
+class TodoList extends Component<HTMLDivElement, HTMLElement> implements DragTarget {
     assignedTodos: Todo[];
 
     // 구체적인 문자열 타입으로 나타내기 위해 enum 사용 x 
@@ -208,6 +208,21 @@ class TodoList extends Component<HTMLDivElement, HTMLElement> {
         // 베이스 클래스에서 호출하지 말고 상속 받는 곳에서 호출하기.
         this.configure();
         this.renderContent();
+    }
+
+    @autobind
+    dragOverHandler(_: DragEvent): void {
+        // 어디에 드롭다운 할 수 있는지 표시.
+        const listEl = this.element.querySelector('ul')!;
+        listEl.classList.add('droppable');
+    }
+    dropHandler(_: DragEvent): void {}
+
+    @autobind
+    drageLeaveHandler(_: DragEvent): void {
+        // 드롭다운 영역을 벗어날 때 class 삭제
+        const listEl = this.element.querySelector('ul')!;
+        listEl.classList.remove('droppable');
     }
 
     private renderTodos() {
@@ -226,6 +241,10 @@ class TodoList extends Component<HTMLDivElement, HTMLElement> {
     }
 
     configure(): void {
+        this.element.addEventListener('dragover', this.dragOverHandler);
+        this.element.addEventListener('dragleave', this.drageLeaveHandler);
+        this.element.addEventListener('drop', this.dropHandler);
+
         // 투두 타입 필터는 listener에서 처리
         todoState.addListener((todos: Todo[]) => {
             const relevantTodo = todos.filter(todo => {
