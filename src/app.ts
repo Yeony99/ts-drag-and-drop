@@ -1,7 +1,24 @@
-// 상태 관리 State Management
+// 투두 타입
+enum TodoStatus {
+    Active,
+    Finished
+}
+class Todo {
+    constructor(
+        public id: string,
+        public title: string,
+        public description: string, 
+        public date: Date, 
+        public status: TodoStatus
+    ) {
 
+    }
+}
+
+// 상태 관리 State Management
+type Listener = (items: Todo[]) => void;
 class TodoState {
-    private listeners: any[] = [];
+    private listeners: Listener[] = [];
     private todos: any[] = [];
     private static instance: TodoState;
     private constructor() {
@@ -9,27 +26,22 @@ class TodoState {
     }
 
     static getInstance() {
-        if(this.instance) {
+        if (this.instance) {
             return this.instance;
         }
         this.instance = new TodoState();
         return this.instance;
     }
 
-    addListener(listenerFn: Function) {
+    addListener(listenerFn: Listener) {
         this.listeners.push(listenerFn);
     }
 
     addTodo(title: string, description: string, date: Date) {
-        const newTodo = {
-            id: Math.random().toString(),
-            title: title,
-            description: description,
-            date: date
-        };
+        const newTodo = new Todo(Math.random().toString(), title, description, date, TodoStatus.Active);
 
         this.todos.push(newTodo);
-        for(const listenerFn of this.listeners) {
+        for (const listenerFn of this.listeners) {
             listenerFn(this.todos.slice()); // 새로운 배열 전달
         }
     }
@@ -101,8 +113,9 @@ class TodoList {
     templateElement: HTMLTemplateElement;
     refElement: HTMLDivElement;
     element: HTMLElement;
-    assignedTodos: any[];
+    assignedTodos: Todo[];
 
+    // 구체적인 문자열 타입으로 나타내기 위해 enum 사용 x 
     constructor(private type: 'active' | 'finished') {
         this.templateElement = document.getElementById('todo-list')! as HTMLTemplateElement;
         this.refElement = document.getElementById('app')! as HTMLDivElement;
@@ -112,8 +125,15 @@ class TodoList {
         this.element = importedNode.firstElementChild as HTMLElement;
         this.element.id = `${this.type}-todos`
 
-        todoState.addListener((todos: any[]) => {
-            this.assignedTodos = todos;
+        // 투두 타입 필터는 listener에서 처리
+        todoState.addListener((todos: Todo[]) => {
+            const relevantTodo = todos.filter(todo => {
+                if(this.type === 'active') {
+                    return todo.status === TodoStatus.Active;
+                }
+                return todo.status === TodoStatus.Finished;
+            })
+            this.assignedTodos = relevantTodo;
             this.renderTodos();
         });
 
@@ -123,10 +143,11 @@ class TodoList {
 
     private renderTodos() {
         const listEl = document.getElementById(`${this.type}-todo-list`)! as HTMLUListElement;
-        for(const todoItem of this.assignedTodos) {
+        listEl.innerHTML = '';
+        for (const todoItem of this.assignedTodos) {
             const listItem = document.createElement('li');
             listItem.textContent = todoItem.title;
-            listEl?.appendChild(listItem)
+            listEl.appendChild(listItem)
         }
     }
 
