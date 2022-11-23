@@ -1,3 +1,17 @@
+// Drag & Drop Interfaces
+interface Draggable {
+    dragStartHandler(event: DragEvent): void;
+    dragEndHandler(event: DragEvent): void;
+}
+
+interface DragTarget {
+    dragOverHandler(event: DragEvent): void;
+    dropHandler(event: DragEvent): void;
+    drageLeaveHandler(event: DragEvent): void;
+}
+
+
+
 // 투두 타입
 enum TodoStatus {
     Active,
@@ -150,7 +164,7 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 
 // TodoItem class
 
-class TodoItem extends Component<HTMLUListElement, HTMLLIElement> {
+class TodoItem extends Component<HTMLUListElement, HTMLLIElement> implements Draggable {
 
     private todo: Todo;
 
@@ -162,8 +176,18 @@ class TodoItem extends Component<HTMLUListElement, HTMLLIElement> {
         this.renderContent();
     }
 
+    @autobind
+    dragStartHandler(event: DragEvent): void {
+        console.log(event)
+    }
+
+    dragEndHandler(_: DragEvent): void {
+        console.log('DragEnd')
+    }
+
     configure(): void {
-        
+        this.element.addEventListener('dragstart', this.dragStartHandler);
+        this.element.addEventListener('dragend', this.dragEndHandler);
     }
 
     renderContent(): void {
