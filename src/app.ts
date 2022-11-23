@@ -16,13 +16,20 @@ class Todo {
 }
 
 // 상태 관리 State Management
-type Listener = (items: Todo[]) => void;
-class TodoState {
-    private listeners: Listener[] = [];
+type Listener<T> = (items: T[]) => void;
+
+class State<T> {
+    protected listeners: Listener<T>[] = [];
+
+    addListener(listenerFn: Listener<T>) {
+        this.listeners.push(listenerFn);
+    }
+}
+class TodoState extends State<Todo> {
     private todos: any[] = [];
     private static instance: TodoState;
     private constructor() {
-
+        super();
     }
 
     static getInstance() {
@@ -33,9 +40,7 @@ class TodoState {
         return this.instance;
     }
 
-    addListener(listenerFn: Listener) {
-        this.listeners.push(listenerFn);
-    }
+    
 
     addTodo(title: string, description: string, date: Date) {
         const newTodo = new Todo(Math.random().toString(), title, description, date, TodoStatus.Active);
@@ -109,35 +114,50 @@ function autobind(
 }
 
 
-class TodoList {
+// 기본 컴포넌트 클래스 (General) 제네릭 추가
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     templateElement: HTMLTemplateElement;
-    refElement: HTMLDivElement;
-    element: HTMLElement;
+    refElement: T;
+    element: U;
+
+    constructor(
+        templateId: string, 
+        refElementId: string, 
+        insertAtStart: boolean,
+        newElementId?: string,
+    ) {
+        this.templateElement = document.getElementById(templateId)! as HTMLTemplateElement;
+        this.refElement = document.getElementById(refElementId)! as T;
+
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild as U;
+        if(newElementId) {
+            this.element.id = newElementId;
+        }
+
+        this.attach(insertAtStart);
+    }
+
+    private attach(insertAtBegging: boolean) {
+        this.refElement.insertAdjacentElement(insertAtBegging? 'afterbegin' : 'beforeend', this.element);
+    }
+
+    // 상속받는 클래스에서 사용할 수 있게 명시
+    abstract configure(): void;
+    abstract renderContent(): void;
+}
+
+
+class TodoList extends Component<HTMLDivElement, HTMLElement> {
     assignedTodos: Todo[];
 
     // 구체적인 문자열 타입으로 나타내기 위해 enum 사용 x 
     constructor(private type: 'active' | 'finished') {
-        this.templateElement = document.getElementById('todo-list')! as HTMLTemplateElement;
-        this.refElement = document.getElementById('app')! as HTMLDivElement;
+        super('todo-list', 'app', false, `${type}-todos`);
         this.assignedTodos = [];
 
-        const importedNode = document.importNode(this.templateElement.content, true);
-        this.element = importedNode.firstElementChild as HTMLElement;
-        this.element.id = `${this.type}-todos`
-
-        // 투두 타입 필터는 listener에서 처리
-        todoState.addListener((todos: Todo[]) => {
-            const relevantTodo = todos.filter(todo => {
-                if(this.type === 'active') {
-                    return todo.status === TodoStatus.Active;
-                }
-                return todo.status === TodoStatus.Finished;
-            })
-            this.assignedTodos = relevantTodo;
-            this.renderTodos();
-        });
-
-        this.attach();
+        // 베이스 클래스에서 호출하지 말고 상속 받는 곳에서 호출하기.
+        this.configure();
         this.renderContent();
     }
 
@@ -152,40 +172,42 @@ class TodoList {
     }
 
 
-    private renderContent() {
+    renderContent() {
         const listId = `${this.type}-todo-list`;
         this.element.querySelector('ul')!.id = listId;
         this.element.querySelector('h2')!.textContent = this.type.toUpperCase() + ' TODO'
     }
 
-    private attach() {
-        this.refElement.insertAdjacentElement('beforeend', this.element);
+    configure(): void {
+        // 투두 타입 필터는 listener에서 처리
+        todoState.addListener((todos: Todo[]) => {
+            const relevantTodo = todos.filter(todo => {
+                if(this.type === 'active') {
+                    return todo.status === TodoStatus.Active;
+                }
+                return todo.status === TodoStatus.Finished;
+            })
+            this.assignedTodos = relevantTodo;
+            this.renderTodos();
+        });
+
     }
 }
 
 
-class TodoInput {
-    templateElement: HTMLTemplateElement;
-    refElement: HTMLDivElement;
-    element: HTMLElement;
+class TodoInput extends Component<HTMLDivElement, HTMLFormElement> {
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
     DateInputElement: HTMLInputElement;
 
     constructor() {
-        this.templateElement = document.getElementById('todo-input')! as HTMLTemplateElement;
-        this.refElement = document.getElementById('app')! as HTMLDivElement;
-
-        const importedNode = document.importNode(this.templateElement.content, true);
-        this.element = importedNode.firstElementChild as HTMLElement;
-        this.element.id = 'user-input'
+        super('todo-input', 'app', true, 'user-input')
 
         this.titleInputElement = this.element.querySelector('#title') as HTMLInputElement;
         this.descriptionInputElement = this.element.querySelector('#description') as HTMLInputElement;
         this.DateInputElement = this.element.querySelector('#date') as HTMLInputElement;
 
         this.configure();
-        this.attach();
     }
 
     private getUserInput(): [string, string, Date] | void {
@@ -242,12 +264,13 @@ class TodoInput {
         }
     }
 
-    private configure() {
+    configure() {
+
         this.element.addEventListener('submit', this.submitHandler)
     }
 
-    private attach() {
-        this.refElement.insertAdjacentElement('afterbegin', this.element);
+    renderContent(): void {
+        
     }
 }
 
