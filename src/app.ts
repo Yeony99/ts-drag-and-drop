@@ -60,6 +60,18 @@ class TodoState extends State<Todo> {
         const newTodo = new Todo(Math.random().toString(), title, description, date, TodoStatus.Active);
 
         this.todos.push(newTodo);
+        this.updateListeners();
+    }
+
+    moveTodo(todoId: string, newStatus: TodoStatus) {
+        const todo = this.todos.find(td => td.id === todoId);
+        if(todo && todo.status !== newStatus) {
+            todo.status = newStatus;
+            this.updateListeners();
+        }
+    }
+
+    private updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn(this.todos.slice()); // 새로운 배열 전달
         }
@@ -178,7 +190,9 @@ class TodoItem extends Component<HTMLUListElement, HTMLLIElement> implements Dra
 
     @autobind
     dragStartHandler(event: DragEvent): void {
-        console.log(event)
+        // ID만 전달
+        event.dataTransfer!.setData('text/plain', this.todo.id); 
+        event.dataTransfer!.effectAllowed = 'move';
     }
 
     dragEndHandler(_: DragEvent): void {
@@ -211,12 +225,28 @@ class TodoList extends Component<HTMLDivElement, HTMLElement> implements DragTar
     }
 
     @autobind
-    dragOverHandler(_: DragEvent): void {
-        // 어디에 드롭다운 할 수 있는지 표시.
-        const listEl = this.element.querySelector('ul')!;
-        listEl.classList.add('droppable');
+    dragOverHandler(event: DragEvent): void {
+
+        if(event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+            
+            // Drag & Drop 이벤트의 default는 dropping을 허용하지 않음.
+            // preventDefault 추가
+            event.preventDefault();
+            // 어디에 드롭다운 할 수 있는지 표시.
+            const listEl = this.element.querySelector('ul')!;
+            listEl.classList.add('droppable');
+        }
+
+
     }
-    dropHandler(_: DragEvent): void {}
+
+    @autobind
+    dropHandler(event: DragEvent): void {
+        // event 에서는 볼 수 없음. getData를 통해 확인해야 함.
+        console.log(event, event.dataTransfer!.getData('text/plain'));
+        const todoId = event.dataTransfer!.getData('text/plain');
+        todoState.moveTodo(todoId, this.type === 'active' ? TodoStatus.Active : TodoStatus.Finished)
+    }
 
     @autobind
     drageLeaveHandler(_: DragEvent): void {
